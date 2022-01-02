@@ -2,20 +2,23 @@
 #and store the data in the MySQL database
 
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup as bs 
+from requests.sessions import session
 
-weather_page = requests.get("https://forecast.weather.gov/MapClick.php?lat=38.96342&lon=-77.4447")
-weather_page_content = BeautifulSoup(weather_page.content, 'html.parser')
-seven_day_data = weather_page_content.find(id="seven-day-forecast")
-forecast_data = seven_day_data.find_all(class_= "tombstone-container")
-tonight_data = forecast_data[0]
-period = tonight_data.find(class_= "period-name").get_text()
-img = tonight_data.find("img")
-long_description = img['title']
-short_description = tonight_data.find(class_= "short-desc").get_text()
-temperature = tonight_data.find(class_= "temp").get_text()
+def weather_fetcher(url):
+    session = requests.Session()
+    session.headers['User-Agent'] = USER_AGENT
+    session.headers['Accept-Language'] = LANGUAGE
+    session.headers['Content-Language'] = LANGUAGE
+    weather_url = session.get(url)
 
-print(period)
-print(long_description)
-print(short_description)
-print(temperature)
+    weather_data = bs(weather_url.text, "html.parser")
+
+    weather_data_dict = {}
+    weather_data_dict['location'] = weather_data.find("div", attrs={"id": "wob_loc"}).text
+    weather_data_dict['time'] = weather_data.find("div", attrs={"id": "wob_dts"}).text
+    weather_data_dict['current_temp'] = weather_data.find("span", attrs={"id": "wob_tm"}).text
+    weather_data_dict['current_weather'] = weather_data.find("span", attrs={"id": "wob_dc"}).text
+    weather_data_dict['precipitation'] = weather_data.find("span", attrs={"id": "wob_pp"}).text
+    weather_data_dict['humidity'] = weather_data.find("span", attrs={"id": "wob_hm"}).text
+    weather_data_dict['wind'] = weather_data.find("span", attrs={"id": "wob_ws"}).text
