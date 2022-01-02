@@ -22,3 +22,17 @@ def weather_fetcher(url):
     weather_data_dict['precipitation'] = weather_data.find("span", attrs={"id": "wob_pp"}).text
     weather_data_dict['humidity'] = weather_data.find("span", attrs={"id": "wob_hm"}).text
     weather_data_dict['wind'] = weather_data.find("span", attrs={"id": "wob_ws"}).text
+
+    seven_days_weather = []
+    seven_days = weather_data.find("div", attrs={"id": "wob_dp"})
+    
+    for day in seven_days.findAll("div", attrs={"class": "wob_df"}):
+        day_name = day.findAll("div")[0].attrs['aria-label']
+        day_weather = day.findAll("img").attrs["alt"]
+        day_temp = day.findAll("span", {"class": "wob_t"})
+        day_max = day_temp[0].text
+        day_min = day_temp[2].text
+        seven_days_weather.append({"name": day_name, "current_weather": day_weather, "max_temp": day_max, "min_temp": day_min})
+    
+    weather_data_dict['seven_days'] = seven_days_weather
+    return weather_data_dict
