@@ -9,7 +9,7 @@ Furthermore, it also prints the 7 day forecast, along with the high/low temperat
 
 Google weather is used to perform the data scraping
 
-To run the code, simple clone the repository and run the following command from your terminal (<location> is optional)
+To run the code, simple clone the repository and run the following command from your terminal ("location" is optional)
 ```
 $ python3 weather-scraper.py <location>
 

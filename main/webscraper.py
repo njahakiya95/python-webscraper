@@ -1,11 +1,26 @@
-#webscraper.py is used to scrape the content of various websites 
-#and store the data in the MySQL database
+#!/usr/bin/env python3  
+# -*- coding: utf-8 -*- 
+#===========================================================================
+# Created By  : Nirmal Patel   
+# Created Date: 1/2/2022
+# version ='1.0'
+#===========================================================================
+"""weather-scraper.py takes a user input location (if provided)
+and outputs the current time, temperature, humidity, wind, and chance of precipitation. If no
+input location is provided, the default location is the IP of the computer being used to run the code.
 
+Furthermore, it also prints the 7 day forecast, along with the high/low temperature for each day. 
+
+Google weather is used to perform the data scraping
+"""
+
+#Import libraries 
 import requests
 import argparse
 from bs4 import BeautifulSoup as bs 
 from requests.sessions import session
 
+#USER_AGENT and LANGUAGE define the acceptable browsers and language used to return scraped data
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36"
 LANGUAGE = "en-US,en;q=0.5"
 
@@ -51,16 +66,14 @@ if __name__ == "__main__":
     URL += location
 
     data = weather_fetcher(URL)
-    print("Weather for:", data["location"])
-    print("Now:", data["time"])
-    print(f"Temperature now: {data['current_temp']}°F")
-    print("Description:", data['current_weather'])
-    print("Precipitation:", data["precipitation"])
-    print("Humidity:", data["humidity"])
-    print("Wind:", data["wind"])
-    print("Next days:")
+    print("Right now it is", data["time"], "in", data["location"])
+    print("The weather is", data["current_temp"], "°F", "and", data["current_weather"])
+    print("There is a ", data["precipitation"], "chance of precipitation")
+    print("The humiditiy is", data["humidity"], "and the wind is", data["wind"])
+    print("\n" * 3)
+    print("The seven day forecast is:")
     for each_day in data["seven_days"]:
         print("="*40, each_day["name"], "="*40)
-        print("Description:", each_day["current_weather"])
-        print(f"Max temperature: {each_day['max_temp']}°F")
-        print(f"Min temperature: {each_day['min_temp']}°F")
+        print("The weather forecast for", each_day["name"], "is", each_day["current_weather"])
+        print(f"The high is: {each_day['max_temp']}°F")
+        print(f"The low is: {each_day['min_temp']}°F")
