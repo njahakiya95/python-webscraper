@@ -21,7 +21,7 @@ $ python3 weather-scraper.py "New York"
 
 ```
 
-'''
+```
 Right now it is Sunday 8:00 PM in New York, NY
 The weather is 41 °F and Partly cloudy
 There is a  1% chance of precipitation
@@ -63,4 +63,4 @@ The low is: 31°F
 The weather forecast for Sunday is Mostly cloudy
 The high is: 43°F
 The low is: 34°F
-'''
+```
