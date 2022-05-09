@@ -5,7 +5,8 @@
 # Created Date: 1/2/2022
 # version ='1.0'
 #===========================================================================
-"""weather-scraper.py takes a user input location (if provided)
+"""
+weather-scraper.py takes a user input location (if provided)
 and outputs the current time, temperature, humidity, wind, and chance of precipitation. If no
 input location is provided, the default location is the IP of the computer being used to run the code.
 
