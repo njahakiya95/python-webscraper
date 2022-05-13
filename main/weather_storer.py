@@ -51,10 +51,10 @@ def weather_storer(weather_url):
     weather_data_dict['wind'] = weather_html.find("span", attrs={"id": "wob_ws"}).text
 
     return (weather_data_dict)
-#Create a SQL database to store data from the dict
-#Add code to save the data from the dict to a csv file
-#Add code to plot seven day weather 
-#Write main and prompt user for an input location 
 
-URL = "https://www.google.com/search?lr=lang_en&ie=UTF-8&q=london+weather"
-print(weather_storer(URL))
+
+googlweather_url = "https://www.google.com/search?lr=lang_en&ie=UTF-8&q=weather+"
+location = input("Enter the name of the city whose weather you want to know: ")
+location_weather_url = googlweather_url+location
+
+print(weather_storer(location_weather_url))
