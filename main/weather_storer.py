@@ -42,7 +42,7 @@ def weather_storer(weather_url):
 
     #weather_data_dict{} stores weather data parsed from weather_html 
     weather_data_dict = {} 
-    weather_data_dict['location'] = weather_html.find("div", attrs={"id": "wob_loc"}).text  
+    weather_data_dict['location'] = weather_html.find("div", attrs={"id": "wob_loc"}).text
     weather_data_dict['time'] = weather_html.find("div", attrs={"id": "wob_dts"}).text
     weather_data_dict['current_temp'] = weather_html.find("span", attrs={"id": "wob_tm"}).text
     weather_data_dict['current_weather'] = weather_html.find("span", attrs={"id": "wob_dc"}).text
@@ -50,11 +50,21 @@ def weather_storer(weather_url):
     weather_data_dict['humidity'] = weather_html.find("span", attrs={"id": "wob_hm"}).text
     weather_data_dict['wind'] = weather_html.find("span", attrs={"id": "wob_ws"}).text
 
-    return (weather_data_dict)
+    #Format and print data from weather_data_dict{} 
+    print("\n" * 3)
+    print("Right now it is", weather_data_dict["time"], "in", weather_data_dict["location"])
+    print("The weather is", weather_data_dict["current_temp"], "°F", "and", weather_data_dict["current_weather"])
+    print("There is a ", weather_data_dict["precipitation"], "chance of precipitation")
+    print("The humiditiy is", weather_data_dict["humidity"], "and the wind is", weather_data_dict["wind"])
+    print("\n" * 3)
 
+    return "Weather scraping and storing complete!"
 
-googlweather_url = "https://www.google.com/search?lr=lang_en&ie=UTF-8&q=weather+"
-location = input("Enter the name of the city whose weather you want to know: ")
-location_weather_url = googlweather_url+location
+if __name__ == "__main__":
+    googlweather_url = "https://www.google.com/search?lr=lang_en&ie=UTF-8&q=weather+"   #googlweather_url stores google weather url
+    location = input("Enter the name of the city whose weather you want to know: ")     #store user-input city name
+    location_weather_url = googlweather_url+location    #location_weather_url concatenates location to googleweather_url
 
-print(weather_storer(location_weather_url))
+    print(weather_storer(location_weather_url))
+
+    bool_seven_days = bool(input("Would you like to also view the 7 days weather? True or False: "))
