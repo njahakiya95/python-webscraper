@@ -29,8 +29,8 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 LANGUAGE = "en-US,en;q=0.5"
 
 #Weather_storer function
-def weather_storer(weather_url):
-    #url_connect is a Session object that allows you to persis
+def oneday_weather_storer(weather_url):
+    #url_connect is a Session object that allows you to persist
     url_connect = requests.Session()
     url_connect.headers['User-Agent'] = USER_AGENT          #User-Agent retrieves and presents Web content
     url_connect.headers['Accept-Language'] = LANGUAGE       #Accept-Language defines the language intended for the end-user
@@ -58,13 +58,48 @@ def weather_storer(weather_url):
     print("The humiditiy is", weather_data_dict["humidity"], "and the wind is", weather_data_dict["wind"])
     print("\n" * 3)
 
-    return "Weather scraping and storing complete!"
+    return "*******************************"
+
+def sevenday_weather_storer(weather_url):
+    #url_connect is a Session object that allows you to persist
+    url_connect = requests.Session()
+    url_connect.headers['User-Agent'] = USER_AGENT          #User-Agent retrieves and presents Web content
+    url_connect.headers['Accept-Language'] = LANGUAGE       #Accept-Language defines the language intended for the end-user
+    url_connect.headers['Content-Language'] = LANGUAGE      #Content-Language defines the language to be used to pull the content
+    weather_url = url_connect.get(weather_url)              #Gets the user-entered URL of Google weather at a particular location 
+
+    #weather_html stores html-parsed google weather page 
+    weather_html = bs(weather_url.text, "html.parser")  
+    
+    #seven_days_weather is an array that stores the 7 days weather data 
+    seven_days_weather = [] 
+    seven_days = weather_html.find("div", attrs={"id": "wob_dp"})
+    
+    for day in seven_days.findAll("div", attrs={"class": "wob_df"}):    #for each day in the seven_days array, find the html tag related to the weather data for each day
+        day_name = day.findAll("div")[0].attrs['aria-label']  
+        day_weather = day.find("img").attrs["alt"]              
+        day_temp = day.findAll("span", {"class": "wob_t"})
+        day_max = day_temp[0].text
+        day_min = day_temp[2].text
+        seven_days_weather.append({"name": day_name, "current_weather": day_weather, "max_temp": day_max, "min_temp": day_min})
+
+    for each_day in seven_days_weather["seven_days"]: #loop over each_day in seven_days and print the weather, max, and min temp for each_day 
+        print("="*40, each_day["name"], "="*40)
+        print("The weather forecast for", each_day["name"], "is", each_day["current_weather"])  
+        print(f"The high is: {each_day['max_temp']}°F")
+        print(f"The low is: {each_day['min_temp']}°F")
+
+    return "*******************************"
 
 if __name__ == "__main__":
     googlweather_url = "https://www.google.com/search?lr=lang_en&ie=UTF-8&q=weather+"   #googlweather_url stores google weather url
     location = input("Enter the name of the city whose weather you want to know: ")     #store user-input city name
     location_weather_url = googlweather_url+location    #location_weather_url concatenates location to googleweather_url
 
-    print(weather_storer(location_weather_url))
+    print(oneday_weather_storer(location_weather_url))
 
     bool_seven_days = bool(input("Would you like to also view the 7 days weather? True or False: "))
+    if bool_seven_days == True:
+        print(sevenday_weather_storer(location_weather_url))
+    else:
+        print("Weather scraping complete!")
