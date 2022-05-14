@@ -19,7 +19,6 @@ Additionally the data is stored in a PostgreSQL database
 
 #Import Libraries
 import requests
-import argparse
 from requests import Session
 from bs4 import BeautifulSoup as bs 
 
@@ -72,7 +71,8 @@ def sevenday_weather_storer(weather_url):
     weather_html = bs(weather_url.text, "html.parser")  
     
     #seven_days_weather is an array that stores the 7 days weather data 
-    seven_days_weather = [] 
+    seven_days_weather = []
+    seven_days_weather_dict = {}
     seven_days = weather_html.find("div", attrs={"id": "wob_dp"})
     
     for day in seven_days.findAll("div", attrs={"class": "wob_df"}):    #for each day in the seven_days array, find the html tag related to the weather data for each day
@@ -82,8 +82,9 @@ def sevenday_weather_storer(weather_url):
         day_max = day_temp[0].text
         day_min = day_temp[2].text
         seven_days_weather.append({"name": day_name, "current_weather": day_weather, "max_temp": day_max, "min_temp": day_min})
+        seven_days_weather_dict['seven_days'] = seven_days_weather
 
-    for each_day in seven_days_weather["seven_days"]: #loop over each_day in seven_days and print the weather, max, and min temp for each_day 
+    for each_day in seven_days_weather_dict["seven_days"]: #loop over each_day in seven_days and print the weather, max, and min temp for each_day 
         print("="*40, each_day["name"], "="*40)
         print("The weather forecast for", each_day["name"], "is", each_day["current_weather"])  
         print(f"The high is: {each_day['max_temp']}°F")
@@ -93,13 +94,14 @@ def sevenday_weather_storer(weather_url):
 
 if __name__ == "__main__":
     googlweather_url = "https://www.google.com/search?lr=lang_en&ie=UTF-8&q=weather+"   #googlweather_url stores google weather url
-    location = input("Enter the name of the city whose weather you want to know: ")     #store user-input city name
+    location = input("Enter the name of the city and state whose weather you want to know: ")     #store user-input city name
     location_weather_url = googlweather_url+location    #location_weather_url concatenates location to googleweather_url
 
     print(oneday_weather_storer(location_weather_url))
 
     bool_seven_days = bool(input("Would you like to also view the 7 days weather? True or False: "))
-    if bool_seven_days == True:
+    print("\n" * 2)
+    if bool_seven_days == "True":
         print(sevenday_weather_storer(location_weather_url))
     else:
         print("Weather scraping complete!")
