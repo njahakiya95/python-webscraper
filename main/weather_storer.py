@@ -21,7 +21,8 @@ PostgreSQL datbase and the user is given the option to save it in a CSV file.
 #Import Libraries
 import requests
 from requests import Session
-from bs4 import BeautifulSoup as bs 
+from bs4 import BeautifulSoup as bs
+import csv 
 
 #USER_AGENT defines the acceptable browsers to scrape from and prevents our bot from being detected 
 #LANGUAGE defines the language in which the scraping will be performed 
@@ -44,21 +45,30 @@ def oneday_weather_storer(weather_url):
     weather_data_dict = {} 
     weather_data_dict['location'] = weather_html.find("div", attrs={"id": "wob_loc"}).text
     weather_data_dict['time'] = weather_html.find("div", attrs={"id": "wob_dts"}).text
-    weather_data_dict['current_temp'] = weather_html.find("span", attrs={"id": "wob_tm"}).text
+    weather_data_dict['current_temperature'] = weather_html.find("span", attrs={"id": "wob_tm"}).text
     weather_data_dict['current_weather'] = weather_html.find("span", attrs={"id": "wob_dc"}).text
     weather_data_dict['precipitation'] = weather_html.find("span", attrs={"id": "wob_pp"}).text
     weather_data_dict['humidity'] = weather_html.find("span", attrs={"id": "wob_hm"}).text
     weather_data_dict['wind'] = weather_html.find("span", attrs={"id": "wob_ws"}).text
+    print (weather_data_dict)
 
     #Format and print data from weather_data_dict{} 
     print("\n" * 3)
     print("Right now it is", weather_data_dict["time"], "in", weather_data_dict["location"])
-    print("The weather is", weather_data_dict["current_temp"], "°F", "and", weather_data_dict["current_weather"])
+    print("The weather is", weather_data_dict["current_temperature"], "°F", "and", weather_data_dict["current_weather"])
     print("There is a ", weather_data_dict["precipitation"], "chance of precipitation")
     print("The humiditiy is", weather_data_dict["humidity"], "and the wind is", weather_data_dict["wind"])
     print("\n" * 3)
 
-    return "*******************************"
+    #save and output a csv file with the one-day weather data 
+    try:
+        csv_file = csv.writer(open("oneday_data.csv", "w"))
+        for key, val in weather_data_dict.items():
+            csv_file.writerow([key, val])
+    except IOError:
+        print("Error saving one day weather data to csv file!")
+
+    return "********************************************************************************"
 
 def sevenday_weather_storer(weather_url):
     #url_connect is a Session object that allows you to persist
@@ -85,17 +95,17 @@ def sevenday_weather_storer(weather_url):
         day_min = day_temp[2].text  #low-temp for day_name
 
         #append day_name, day_weather, day_temp, day_max, and day_min to seven_days_weather array 
-        seven_days_weather.append({"name": day_name, "current_weather": day_weather, "max_temp": day_max, "min_temp": day_min})
+        seven_days_weather.append({"name": day_name, "current_weather": day_weather, "max_temperature": day_max, "min_temperature": day_min})
         seven_days_weather_dict['seven_days'] = seven_days_weather  #convert seven_days_weather array to dict for printing
 
     #format and print weather data from seven_days_weather_dict{}
     for each_day in seven_days_weather_dict["seven_days"]:
         print("="*40, each_day["name"], "="*40)
         print("The weather forecast for", each_day["name"], "is", each_day["current_weather"])  
-        print(f"The high is: {each_day['max_temp']}°F")
-        print(f"The low is: {each_day['min_temp']}°F")
+        print(f"The high is: {each_day['max_temperature']}°F")
+        print(f"The low is: {each_day['min_temperature']}°F")
 
-    return "*******************************"
+    return "**************************************************************"
 
 if __name__ == "__main__":
     googlweather_url = "https://www.google.com/search?lr=lang_en&ie=UTF-8&q=weather+"   #googlweather_url stores google weather url
@@ -104,10 +114,11 @@ if __name__ == "__main__":
 
     print(oneday_weather_storer(location_weather_url))  #run oneday_weather_storer
 
+
     #prompt user and ask if they want the 7 day weather data
     print_seven_days = input("Would you like to also view the 7 days weather? Enter EXACTLY True or False: ")
     print("\n" * 2)
     if print_seven_days == "True":   #if bool_seven_days is True 
         print(sevenday_weather_storer(location_weather_url))    #run sevenday_weather_storer
     elif print_seven_days == "False":
-        print("Weather scraping complete!") #end 
+        print("Scraped weather data was stored in multiple csv files. Thank you for using our scraper!") #end 
