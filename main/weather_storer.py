@@ -31,7 +31,7 @@ LANGUAGE = "en-US,en;q=2.0"
 
 #Weather_storer function
 def oneday_weather_storer(weather_url):
-    #url_connect is a Session object that allows you to persist
+    #url_connect is a Session object that allows you to create a persistent connection 
     url_connect = requests.Session()
     url_connect.headers['User-Agent'] = USER_AGENT          #User-Agent retrieves and presents Web content
     url_connect.headers['Accept-Language'] = LANGUAGE       #Accept-Language defines the language intended for the end-user
@@ -50,7 +50,6 @@ def oneday_weather_storer(weather_url):
     weather_data_dict['precipitation'] = weather_html.find("span", attrs={"id": "wob_pp"}).text
     weather_data_dict['humidity'] = weather_html.find("span", attrs={"id": "wob_hm"}).text
     weather_data_dict['wind'] = weather_html.find("span", attrs={"id": "wob_ws"}).text
-    print (weather_data_dict)
 
     #Format and print data from weather_data_dict{} 
     print("\n" * 3)
@@ -60,15 +59,15 @@ def oneday_weather_storer(weather_url):
     print("The humiditiy is", weather_data_dict["humidity"], "and the wind is", weather_data_dict["wind"])
     print("\n" * 3)
 
-    #save and output a csv file with the one-day weather data 
-    try:
-        csv_file = csv.writer(open("oneday_data.csv", "w"))
-        for key, val in weather_data_dict.items():
-            csv_file.writerow([key, val])
-    except IOError:
-        print("Error saving one day weather data to csv file!")
+    #csv_title variable holds the title of the csv file using the location html id
+    csv_title = weather_html.find("div", attrs={"id": "wob_loc"}).text.split(',')[0]
 
-    return "********************************************************************************"
+    #Save and output a csv file with the one-day weather data 
+    csv_file = csv.writer(open(f"{csv_title}_oneday_data.csv", "w"))
+    for key, val in weather_data_dict.items():
+        csv_file.writerow([key, val])
+
+    return ("\n"*4)
 
 def sevenday_weather_storer(weather_url):
     #url_connect is a Session object that allows you to persist
@@ -81,10 +80,11 @@ def sevenday_weather_storer(weather_url):
     #weather_html stores html-parsed google weather page 
     weather_html = bs(weather_url.text, "html.parser")  
     
-    #seven_days_weather is an array that stores the 7 days weather data 
+    #seven_days stores the HTML id "wob_dp" 
+    seven_days = weather_html.find("div", attrs={"id": "wob_dp"})
+
     seven_days_weather = []
     seven_days_weather_dict = {}
-    seven_days = weather_html.find("div", attrs={"id": "wob_dp"})
     
     #for each day in the seven_days_weather array, find the html tag related to the weather data for each day
     for day in seven_days.findAll("div", attrs={"class": "wob_df"}):    
@@ -97,15 +97,27 @@ def sevenday_weather_storer(weather_url):
         #append day_name, day_weather, day_temp, day_max, and day_min to seven_days_weather array 
         seven_days_weather.append({"name": day_name, "current_weather": day_weather, "max_temperature": day_max, "min_temperature": day_min})
         seven_days_weather_dict['seven_days'] = seven_days_weather  #convert seven_days_weather array to dict for printing
-
+    
     #format and print weather data from seven_days_weather_dict{}
     for each_day in seven_days_weather_dict["seven_days"]:
         print("="*40, each_day["name"], "="*40)
         print("The weather forecast for", each_day["name"], "is", each_day["current_weather"])  
         print(f"The high is: {each_day['max_temperature']}°F")
         print(f"The low is: {each_day['min_temperature']}°F")
+    
+    #csv_title variable holds the title of the csv file using the location html id
+    csv_title = weather_html.find("div", attrs={"id": "wob_loc"}).text.split(',')[0]
 
-    return "**************************************************************"
+    #define csv header using seven_days_weather keys 
+    keys = seven_days_weather[0].keys()
+
+    #Save and output a csv file with the seven-day weather data 
+    with open(f"{csv_title}_sevenday_data.csv", "w") as file:
+        csvwriter = csv.DictWriter(file, keys)
+        csvwriter.writeheader()
+        csvwriter.writerows(seven_days_weather)
+    
+    return ("\n" * 2)
 
 if __name__ == "__main__":
     googlweather_url = "https://www.google.com/search?lr=lang_en&ie=UTF-8&q=weather+"   #googlweather_url stores google weather url
@@ -113,12 +125,4 @@ if __name__ == "__main__":
     location_weather_url = googlweather_url+location    #location_weather_url concatenates location to googleweather_url
 
     print(oneday_weather_storer(location_weather_url))  #run oneday_weather_storer
-
-
-    #prompt user and ask if they want the 7 day weather data
-    print_seven_days = input("Would you like to also view the 7 days weather? Enter EXACTLY True or False: ")
-    print("\n" * 2)
-    if print_seven_days == "True":   #if bool_seven_days is True 
-        print(sevenday_weather_storer(location_weather_url))    #run sevenday_weather_storer
-    elif print_seven_days == "False":
-        print("Scraped weather data was stored in multiple csv files. Thank you for using our scraper!") #end 
+    print(sevenday_weather_storer(location_weather_url))    #run sevenday_weather_storer
