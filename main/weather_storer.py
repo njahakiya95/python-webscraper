@@ -44,7 +44,7 @@ def oneday_weather_storer(weather_url):
 
     #weather_data_dict{} stores weather data parsed from weather_html 
     weather_data_dict = {} 
-    weather_data_dict['location'] = weather_html.find("div", attrs={"id": "wob_loc"}).text
+    weather_data_dict['location'] = weather_html.find("div", attrs={"id": "wob_loc"}).text.split(",")[0]
     weather_data_dict['time'] = weather_html.find("div", attrs={"id": "wob_dts"}).text
     weather_data_dict['current_temperature'] = weather_html.find("span", attrs={"id": "wob_tm"}).text
     weather_data_dict['current_weather'] = weather_html.find("span", attrs={"id": "wob_dc"}).text
@@ -62,15 +62,26 @@ def oneday_weather_storer(weather_url):
 
     #csv_title variable holds the title of the csv file using the location html id
     csv_title = weather_html.find("div", attrs={"id": "wob_loc"}).text.split(',')[0]
-
-    #headaer name 
-
+    
     #Save and output a csv file with the one-day weather data 
-    csv_file = csv.writer(open(f"{csv_title}_oneday_data.csv", "w"))
-    for key, val in weather_data_dict.items():
-         csv_file.writerow([key, val])
-         
-    print (weather_data_dict)
+    file = open(f"{csv_title}_oneday_data.csv", "w")
+    file_writer = csv.DictWriter(file, weather_data_dict.keys())
+    file_writer.writeheader()
+    file_writer.writerow(weather_data_dict)
+    file.close()
+
+    #Connect to weather database that contains the oneday table 
+    conn = psycopg2.connect(database="weather", user="nirmal", password="password", host="127.0.0.1", port="5432")
+    
+    #create cursor object to interact with the weather database 
+    curs = conn.cursor()
+
+    #Open <location>_oneday_data.csv, read from the file and save data to database
+    with open(f"{csv_title}_oneday_data.csv", 'r') as f:
+        next(f)
+        curs.copy_from(f, 'oneday_data', sep=',')
+    
+    conn.commit()
 
     return ("\n"*4)
 
