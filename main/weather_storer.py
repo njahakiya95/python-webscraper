@@ -23,6 +23,7 @@ import requests
 from requests import Session
 from bs4 import BeautifulSoup as bs
 import csv 
+import psycopg2
 
 #USER_AGENT defines the acceptable browsers to scrape from and prevents our bot from being detected 
 #LANGUAGE defines the language in which the scraping will be performed 
@@ -116,6 +117,19 @@ def sevenday_weather_storer(weather_url):
         csvwriter = csv.DictWriter(file, keys)
         csvwriter.writeheader()
         csvwriter.writerows(seven_days_weather)
+
+    #Connect to weather database that contains the oneday table 
+    conn = psycopg2.connect(database="weather", user="nirmal", password="password", host="127.0.0.1", port="5432")
+    
+    #create cursor object to interact with the weather database 
+    curs = conn.cursor()
+
+    #Open <location>_sevenday_data.csv, read from the file and save data to database
+    with open(f"{csv_title}_sevenday_data.csv", 'r') as f:
+        next(f)
+        curs.copy_from(f, 'sevenday_data', sep=',')
+    
+    conn.commit()
     
     return ("\n" * 2)
 
