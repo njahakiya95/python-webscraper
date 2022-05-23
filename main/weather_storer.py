@@ -63,10 +63,14 @@ def oneday_weather_storer(weather_url):
     #csv_title variable holds the title of the csv file using the location html id
     csv_title = weather_html.find("div", attrs={"id": "wob_loc"}).text.split(',')[0]
 
+    #headaer name 
+
     #Save and output a csv file with the one-day weather data 
     csv_file = csv.writer(open(f"{csv_title}_oneday_data.csv", "w"))
     for key, val in weather_data_dict.items():
-        csv_file.writerow([key, val])
+         csv_file.writerow([key, val])
+         
+    print (weather_data_dict)
 
     return ("\n"*4)
 
@@ -130,7 +134,7 @@ def sevenday_weather_storer(weather_url):
         curs.copy_from(f, 'sevenday_data', sep=',')
     
     conn.commit()
-    
+
     return ("\n" * 2)
 
 if __name__ == "__main__":
