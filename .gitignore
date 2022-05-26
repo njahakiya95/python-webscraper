@@ -1,4 +1,6 @@
 #workspace 
 *.code-workspace 
 *.csv
+./OneDayData
+./SevenDayData
 
