@@ -24,13 +24,14 @@ from requests import Session
 from bs4 import BeautifulSoup as bs
 import csv 
 import psycopg2
+import os 
 
 #USER_AGENT defines the acceptable browsers to scrape from and prevents our bot from being detected 
 #LANGUAGE defines the language in which the scraping will be performed 
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36"
 LANGUAGE = "en-US,en;q=2.0"
 
-#Weather_storer function
+#oneday_weather_storer 
 def oneday_weather_storer(weather_url):
     #url_connect is a Session object that allows you to create a persistent connection 
     url_connect = requests.Session()
@@ -53,18 +54,27 @@ def oneday_weather_storer(weather_url):
     weather_data_dict['wind'] = weather_html.find("span", attrs={"id": "wob_ws"}).text
 
     #Format and print data from weather_data_dict{} 
-    print("\n" * 3)
+    print("\n" * 1)
     print("Right now it is", weather_data_dict["time"], "in", weather_data_dict["location"])
     print("The weather is", weather_data_dict["current_temperature"], "°F", "and", weather_data_dict["current_weather"])
-    print("There is a ", weather_data_dict["precipitation"], "chance of precipitation")
+    print("There is a", weather_data_dict["precipitation"], "chance of precipitation")
     print("The humiditiy is", weather_data_dict["humidity"], "and the wind is", weather_data_dict["wind"])
-    print("\n" * 3)
+    print("\n" * 1)
 
     #csv_title variable holds the title of the csv file using the location html id
-    csv_title = weather_html.find("div", attrs={"id": "wob_loc"}).text.split(',')[0]
-    
+    #.split(,)[0] removes the State and Zipcode from the html tag
+    #.replaces whitespaces for city names that are more than one word long 
+    csv_title = weather_html.find("div", attrs={"id": "wob_loc"}).text.split(',')[0].replace(" ", "")
+
+    #Create a directory to store one-day data csv files 
+    try:
+        os.mkdir("./OneDayData")
+    except OSError as e:
+        pass
+
     #Save and output a csv file with the one-day weather data 
-    file = open(f"{csv_title}_oneday_data.csv", "w")
+    csv_file = f"{csv_title}_oneday_data.csv"
+    file = open("./OneDayData/" + csv_file, "w")
     file_writer = csv.DictWriter(file, weather_data_dict.keys())
     file_writer.writeheader()
     file_writer.writerow(weather_data_dict)
@@ -77,14 +87,15 @@ def oneday_weather_storer(weather_url):
     curs = conn.cursor()
 
     #Open <location>_oneday_data.csv, read from the file and save data to database
-    with open(f"{csv_title}_oneday_data.csv", 'r') as f:
+    with open("./OneDayData/" + csv_file, 'r') as f:
         next(f)
         curs.copy_from(f, 'oneday_data', sep=',')
     
     conn.commit()
 
-    return ("\n"*4)
+    return ("\n")
 
+#sevenday_weather_storer
 def sevenday_weather_storer(weather_url):
     #url_connect is a Session object that allows you to persist
     url_connect = requests.Session()
@@ -122,13 +133,22 @@ def sevenday_weather_storer(weather_url):
         print(f"The low is: {each_day['min_temperature']}°F")
     
     #csv_title variable holds the title of the csv file using the location html id
-    csv_title = weather_html.find("div", attrs={"id": "wob_loc"}).text.split(',')[0]
+    #.split(,)[0] removes the State and Zipcode from the html tag
+    #.replaces whitespaces for city names that are more than one word long 
+    csv_title = weather_html.find("div", attrs={"id": "wob_loc"}).text.split(',')[0].replace(" ", "")
 
     #define csv header using seven_days_weather keys 
     keys = seven_days_weather[0].keys()
 
+    #Create a directory to store one-day data csv files 
+    try:
+        os.mkdir("./SevenDayData")
+    except OSError as e:
+        pass
+
     #Save and output a csv file with the seven-day weather data 
-    with open(f"{csv_title}_sevenday_data.csv", "w") as file:
+    csv_file = f"{csv_title}_sevenday_data.csv"
+    with open("./SevenDayData/" + csv_file, "w") as file:
         csvwriter = csv.DictWriter(file, keys)
         csvwriter.writeheader()
         csvwriter.writerows(seven_days_weather)
@@ -140,7 +160,7 @@ def sevenday_weather_storer(weather_url):
     curs = conn.cursor()
 
     #Open <location>_sevenday_data.csv, read from the file and save data to database
-    with open(f"{csv_title}_sevenday_data.csv", 'r') as f:
+    with open("./SevenDayData/" + csv_file, 'r') as f:
         next(f)
         curs.copy_from(f, 'sevenday_data', sep=',')
     
