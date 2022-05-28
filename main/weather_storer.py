@@ -25,6 +25,7 @@ from bs4 import BeautifulSoup as bs
 import csv 
 import psycopg2
 import os 
+import pytest 
 
 #USER_AGENT defines the acceptable browsers to scrape from and prevents our bot from being detected 
 #LANGUAGE defines the language in which the scraping will be performed 
